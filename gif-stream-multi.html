@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Gif Streamer</title>
+  <script type="text/javascript"
+          src="http://ajax.googleapis.com/ajax/libs/jquery/1.4.2/jquery.min.js"></script>
+</head>
+<body>
+<h1>Gifs:</h1>
+
+<div style="">Status: <span id="status">not
+      connected</span></div>
+<ul id="gifs"></ul>
+<script type="text/javascript">
+  var gif_list = $("#gifs");
+  var all_gifs = {};
+
+  function load_gifs() {
+    console.log("Attempting connection...");
+    $.getJSON("/stream", function (gifs) {
+      console.log(gifs);
+      for(var gif in gifs) {
+//        var gif = gifs[n]
+        // If new gif, add to #gifs
+        if(gif && gif != '' && !all_gifs[gif]){
+          all_gifs[gif] = true;
+          $("#status").html("<b>Connected</b>");
+          var link = $("<a>");
+          link.attr('href', "http://gifurl.com/" + gif);
+          var item = $("<li>");
+          var image = $("<img>");
+          image.attr('src', gif);
+          link.html(image);
+          item.html(link)
+          item.prependTo(gif_list);
+        }
+      }
+    });
+  }
+
+  setInterval(load_gifs, 500);
+</script>
+</body>
+</html>
+
