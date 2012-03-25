@@ -8,8 +8,7 @@
 <body>
 <h1>Gifs:</h1>
 
-<div style="">Status: <span id="status">not
-      connected</span></div>
+<div style="">Status: <span id="status">searching...</span></div>
 <ul id="gifs"></ul>
 <script type="text/javascript">
   var gif_list = $("#gifs");
@@ -32,7 +31,7 @@
           image.attr('src', gif);
           link.html(image);
           item.html(link)
-          item.prependTo(gif_list);
+          item.appendTo(gif_list);
         }
       }
     });

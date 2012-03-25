@@ -6,9 +6,9 @@ var sys = require("util"),
   fs = require("fs"),
   events = require("events");
 
-String.prototype.format = function() {
+String.prototype.format = function () {
   var formatted = this;
-  for(arg in arguments) {
+  for (arg in arguments) {
     formatted = formatted.replace("{" + arg + "}", arguments[arg]);
   }
   return formatted;
@@ -60,7 +60,7 @@ http.createServer(
         clearTimeout(timeout);
 
         gif_emitter.removeListener("gif", callback);
-//        urls = {}
+        //        urls = {}
 
       }
 
@@ -72,9 +72,12 @@ http.createServer(
 
       }, 10000);
 
-    } else if ( uri.substring(1, 4) === 'tag' ) {
-      console.log("Searching", uri.substring(5,uri.length) )
-      exports.searchGifs(uri.substring(5,uri.length))
+    } else if (uri.substring(1, 4) === 'tag') {
+      urls = {};
+      gif_emitter.removeAllListeners("gif");
+
+      console.log("Searching", uri.substring(5, uri.length))
+      exports.searchGifs(uri.substring(5, uri.length))
 
       load_static_file('/gif-stream-multi.html', response);
 
@@ -111,7 +114,7 @@ var test_regex = /(http(s?):)([/|.|\w|\s])*\.(?:gif)/g;
 
 //var keyword = 'typing';
 
-exports.searchGifs = function(keyword) {
+exports.searchGifs = function (keyword) {
   var gif_sources = [
     ['www.reddit.com', '/r/gifs/search?q={0}&restrict_sr=on'.format(keyword), test_regex],
     ['www.tumblr.com', '/tagged/{0}-gif/everything'.format(keyword), test_regex],
@@ -131,46 +134,48 @@ exports.searchGifs = function(keyword) {
     // s -> i to avoid closure issues
     (function (i) {
       setTimeout(function () {
-//        setInterval(function () {
-          var get = http.get(
-            {
-              host:gif_sources[i][0],
-              path:gif_sources[i][1],
-              port:80
-            },
+        //        setInterval(function () {
+        var get = http.get(
+          {
+            host:gif_sources[i][0],
+            path:gif_sources[i][1],
+            port:80
+          },
 
-            function (res) {
-              res.on('data',
-                function (chunk) {
-                  var url_regex = gif_sources[i][2];
-                  var matches = chunk.toString().match(url_regex) || [];
-                  for (var m = 0; m < matches.length; m += 1) {
-                    if (!urls[matches[m]]) {
-                      // Write to sockets
-                      for (var j = 0; j < sockets.length; j++) { sockets[0].write("\n" + matches[m]) }
+          function (res) {
+            res.on('data',
+              function (chunk) {
+                var url_regex = gif_sources[i][2];
+                var matches = chunk.toString().match(url_regex) || [];
+                for (var m = 0; m < matches.length; m += 1) {
+                  if (!urls[matches[m]]) {
+                    // Write to sockets
+                    for (var j = 0; j < sockets.length; j++) { sockets[0].write("\n" + matches[m]) }
 
-                      // Emit for web viewers
-//                      gif_emitter.emit("gif", matches[m]);
+                    // Emit for web viewers
+                    //                      gif_emitter.emit("gif", matches[m]);
 
-                      // Store in matches
-                      urls[matches[m]] = true;
+                    // Store in matches
+                    urls[matches[m]] = true;
 
 
-
-                      console.log("Found new gif: " + matches[m]);
-                    }
+                    console.log("Found new gif: " + matches[m]);
                   }
-                })
-
-              res.on('end', function () {
-                if (DEBUG)
-                  for (u in urls) { console.log("" + u); gif_emitter.emit('gif', u); }
+                }
               })
+
+            res.on('end', function () {
+              if (DEBUG)
+                for (u in urls) {
+                  console.log("" + u);
+                  gif_emitter.emit('gif', u);
+                }
             })
+          })
 
-          console.log("Fetched source " + gif_sources[i] + " index " + i);
+        console.log("Fetched source " + gif_sources[i] + " index " + i);
 
-//        }, DELAY) // repeat
+        //        }, DELAY) // repeat
       }, i * (DELAY / gif_sources.length)) // wait
     })(s)
   }
